@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- displays site properly based on user's device -->
+
+  <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
+
+  <title>Frontend Mentor | Manage landing page</title>
+
+  <!-- Feel free to remove these styles or customise in your own stylesheet 👍 -->
+  <script>
+
+    function auth() {
+
+      // fetch("/demo/member/auth", {
+      //   method: "POST",
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: {'userName':'adminZ8','password':'1234'}
+      // }).then(res => {
+      //   console.log("Request complete! response:", res);
+      // });
+      fetch('/wish/getAll')
+    .then((response) => {
+        console.log(response); 
+    })
+
+    }
+  </script>
+  <style>
+    .attribution {
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .attribution a {
+      color: hsl(228, 45%, 44%);
+    }
+
+    .container {
+      background: dodgerblue;
+      padding: 20px;
+      height: 70px;
+    }
+
+    #hamburger {
+      width: 40px;
+      height: 40px;
+      display: block;
+      position: relative;
+      float: right;
+      transform: rotate(0deg);
+      transition: .5s ease-in-out;
+      cursor: pointer;
+    }
+
+    #hamburger span {
+      display: block;
+      position: absolute;
+      height: 4px;
+      width: 100%;
+      background: white;
+      border-radius: 9px;
+      opacity: 1;
+      left: 0;
+      transform: rotate(0deg);
+      transition: .25s ease-in-out;
+    }
+
+    #hamburger span:nth-child(1) {
+      top: 0px;
+    }
+
+    #hamburger span:nth-child(2) {
+      top: 12px;
+    }
+
+    #hamburger span:nth-child(3) {
+      top: 24px;
+    }
+
+    #hamburger.open span:nth-child(1) {
+      top: 14px;
+      transform: rotate(135deg);
+    }
+
+    #hamburger.open span:nth-child(2) {
+      opacity: 0;
+      left: -60px;
+    }
+
+    #hamburger.open span:nth-child(3) {
+      top: 14px;
+      transform: rotate(-135deg);
+    }
+
+    #test {
+      cursor: e-resize;
+      border: 1px solid red;
+      border-radius: 20px;
+      margin: 5px auto;
+      width: 25px;
+      transform: translateX(-800vh);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+
+  </div>
+  <div style="color: red;">
+    <h id="test">Test</h>
+  </div>
+  <button id="authBtn" onclick="auth()">PRESS ME</button>
+
+
+  <div class="attribution">
+    Challenge by <a href="https://www.frontendmentor.io?ref=challenge" target="_blank">Frontend Mentor</a>.
+    Coded by <a href="#">Your Name Here</a>.
+  </div>
+</body>
+
+</html>

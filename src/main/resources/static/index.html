@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- displays site properly based on user's device -->
+
+<link rel="icon" type="image/png" sizes="32x32"
+	href="./images/favicon-32x32.png">
+<title>Frontend Mentor | Manage landing page</title>
+
+<!-- Feel free to remove these styles or customise in your own stylesheet 👍 -->
+
+<script>
+
+	(function () {
+		getToken();
+	})();
+	function getToken(){
+		var myHeaders = new Headers();
+		var reponseStr= "";
+		myHeaders.append("Content-Type", "application/json");
+
+    	var raw = JSON.stringify({
+    	  "userName": "admin",
+    	  "password": "1234"
+    	});
+
+    	var requestOptions = {
+    	  method: 'POST',
+    	  headers: myHeaders,
+    	  body: raw,
+    	  redirect: 'follow'
+    	};
+
+    	fetch("http://localhost:8080/member/auth", requestOptions)
+    	  .then(response => response.text())
+    	  //.then(result => console.log(result))
+    	  .then(function(response) {
+    		  console.log("----->"+typeof response);
+
+    		  var jwt=JSON.parse(response);
+    		  document.getElementById('token').value=jwt.jwt;
+    	    	hideMask();
+
+    		  })
+    	  .catch(error => console.log('error', error));
+	}
+ 
+    
+    function getMemberData(){
+    	showMask();
+
+    	var myHeaders = new Headers();
+    	myHeaders.append("Authorization", "Bearer "+document.getElementById('token').value);
+    	myHeaders.append("Content-Type", "application/json");
+    	myHeaders.append("Cookie", "JSESSIONID=89E2548BC90921222DBEAB4347B96229");
+
+    	
+
+    	var requestOptions = {
+    	  method: 'GET',
+    	  headers: myHeaders,
+    	  redirect: 'follow'
+    	};
+
+    	fetch("http://localhost:8080/member/getall", requestOptions)
+    	  .then(response => response.text())
+    	  .then(result => buildTable(JSON.parse(result)))
+    	  .catch(error => console.log('error', error));
+    }
+    
+    function buildTable(data){
+		var table = document.getElementById('myTable')
+		table.innerHTML="";
+		for (var i = 0; i < data.length; i++){
+			var row = 
+			"<tr><td> <input id='"+data[i].id+"id' type='text' value='"+data[i].id+"' readonly style='display:none;width:50px;'/>";
+			if(data[i].name!="admin"){
+
+				row += "<input type='button'value='-'  id='"+data[i].id+"delete' onClick='deleteMember(this,queryBack);'/>";
+				}
+			row +="</td><td><input id='"+data[i].id+"name' type='text' value='"+data[i].name+"' readonly/>"+
+			"</td><td><input id='"+data[i].id+"pwd' type='password' value='"+data[i].pwd+"' readonly/>"+
+			"</td><td><input id='"+data[i].id+"email' type='text' value='"+data[i].email2+"' readonly/>"+
+			"</td><td><input id='"+data[i].id+"birth' type='date' value='"+data[i].birth+"' readonly/>";
+			
+			if(data[i].name!="admin"){
+				row +="</td><td><input type='button' id='"+data[i].id+"update' value='Update' onClick='selectUpd(this);'style='width:100px;height:30px;'/>";
+
+			}
+			 row +="<input type='button' style='display:none;width:100px;height:30px;' id='"+data[i].id+"confirm' value='Confirm' onClick='confirmChange(this);'/>"+
+			"<input type='button' style='display:none;width:100px;height:30px;' id='"+data[i].id+"cancel' value='Cancel' onClick='cancel(this);'/></td>"
+			+"</tr>";
+			table.innerHTML += row;
+
+			hideMask();
+		}}
+    
+    function selectUpd(currElement){
+    	
+    	var id=currElement.id.replace('update',''); 
+    	
+    	var action=document.getElementById(currElement.id);
+    	var nameInput=document.getElementById(id+"name");
+    	var pwdInput=document.getElementById(id+"pwd");
+    	var emailInput=document.getElementById(id+"email");
+    	var birthInput=document.getElementById(id+"birth");
+    	var cancel=document.getElementById(id+"cancel");
+    	var confirm=document.getElementById(id+"confirm");
+    	
+    	nameInput.readOnly = false;
+    	emailInput.readOnly = false;
+    	birthInput.readOnly = false;    	
+    	pwdInput.readOnly = false;   
+    	
+    	nameInput.style.backgroundColor="#fcba03";
+    	emailInput.style.backgroundColor="#fcba03";
+    	pwdInput.style.backgroundColor="#fcba03";
+    	birthInput.style.backgroundColor="#fcba03";
+    	action.style.display='none';
+    	cancel.style.display='block';
+    	confirm.style.display='block';
+    }
+    function cancel(currItem){
+    	showMask();
+
+    	var id=currItem.id.replace('cancel','');    	
+    	
+    	var myHeaders = new Headers();
+    	myHeaders.append("Authorization", "Bearer "+document.getElementById('token').value);
+    	myHeaders.append("Content-Type", "application/json");
+
+
+    	var requestOptions = {
+    	  method: 'GET',
+    	  headers: myHeaders,
+    	  redirect: 'follow'
+    	};
+
+    	fetch("http://localhost:8080/member/get/"+id, requestOptions)
+    	  .then(response => response.text())
+    	  .then(function(result) {
+    		  var curData=JSON.parse(result);
+    		  
+    		  document.getElementById(id+'name').value=curData.name;
+    		  document.getElementById(id+'email').value=curData.email2;
+    		  document.getElementById(id+'birth').value=curData.birth;
+    		  hideMask();
+    		  })
+    	  
+    	  .catch(error => console.log('error', error));
+    	var action=document.getElementById(id);
+    	var nameInput=document.getElementById(id+"name");
+    	var emailInput=document.getElementById(id+"email");
+    	var birthInput=document.getElementById(id+"birth");
+    	var cancel=document.getElementById(currItem.id);
+    	var confirm=document.getElementById(id+"confirm");
+    	var update=document.getElementById(id+"update");
+    	var pwdInput=document.getElementById(id+"pwd");
+
+    	
+    	nameInput.readOnly = true;
+    	emailInput.readOnly = true;
+    	birthInput.readOnly = true;    	
+    	
+    	nameInput.style.backgroundColor="white";
+    	emailInput.style.backgroundColor="white";
+    	birthInput.style.backgroundColor="white";
+    	pwdInput.style.backgroundColor="white";
+    	
+    	
+    	cancel.style.display='none';
+    	update.style.display='block';
+    	confirm.style.display='none';
+    }
+    function confirmChange (currItem){
+    	showMask();
+
+    	var id=currItem.id.replace('confirm','');    	
+
+    	var nameInput=document.getElementById(id+"name");
+    	var emailInput=document.getElementById(id+"email");
+    	var birthInput=document.getElementById(id+"birth");
+    	var pwdInput=document.getElementById(id+"pwd");
+    	var confirm=document.getElementById(currItem.id);
+    	
+    	var myHeaders = new Headers();
+    	myHeaders.append("Authorization", "Bearer "+document.getElementById('token').value);
+    	myHeaders.append("Content-Type", "application/json");
+
+    	var raw = JSON.stringify([
+    	  {
+    	    "id": id,
+    	    "name": nameInput.value,
+    	    "email2": emailInput.value,
+    	    "birth": birthInput.value,
+    	    "pwd": pwdInput.value
+    	  }
+    	]);
+
+    	var requestOptions = {
+    	  method: 'POST',
+    	  headers: myHeaders,
+    	  body: raw,
+    	  redirect: 'follow'
+    	};
+
+    	fetch("http://localhost:8080/member/add", requestOptions)
+    	  .then(response => response.text())
+    	  .then(function(response) {
+    		  
+    	    	hideMask();
+
+    		  })
+    	  .catch(error => console.log('error', error));
+    	
+    	
+    	
+    	var cancel=document.getElementById(id+"cancel");
+    	var confirm=document.getElementById(currItem.id);
+    	var update=document.getElementById(id+"update");
+    	var pwdInput=document.getElementById(id+"pwd");
+
+    	
+    	nameInput.readOnly = true;
+    	emailInput.readOnly = true;
+    	birthInput.readOnly = true;    	
+    	
+    	nameInput.style.backgroundColor="white";
+    	emailInput.style.backgroundColor="white";
+    	birthInput.style.backgroundColor="white";
+    	pwdInput.style.backgroundColor="white";
+    	
+    	
+    	cancel.style.display='none';
+    	update.style.display='block';
+    	confirm.style.display='none';
+    }
+    
+    function openForm(){
+    	var addName=document.getElementById("addName");
+    	var addPwd=document.getElementById("addPwd");
+    	var addEmail=document.getElementById("addEmail");
+    	var addBirth=document.getElementById("addBirth");
+    	
+    	addName.value='';
+    	addPwd.value='';
+    	addEmail.value='';
+    	addBirth.value='';
+    	  document.getElementById("myForm").style.display = "block";
+    }
+    function closeForm() {
+    	  document.getElementById("myForm").style.display = "none";
+    	}
+	function save(callback){
+		showMask();
+
+    	var addName=document.getElementById("addName");
+    	var addPwd=document.getElementById("addPwd");
+    	var addEmail=document.getElementById("addEmail");
+    	var addBirth=document.getElementById("addBirth");
+    	
+		
+		var myHeaders = new Headers();
+		myHeaders.append("Authorization", "Bearer "+document.getElementById('token').value);
+		myHeaders.append("Content-Type", "application/json");
+
+		var raw = JSON.stringify([
+		  {
+		    "name": addName.value,
+		    "pwd": addPwd.value,
+		    "email2": addEmail.value,
+		    "birth": addBirth.value
+		  }
+		]);
+
+		var requestOptions = {
+		  method: 'POST',
+		  headers: myHeaders,
+		  body: raw,
+		  redirect: 'follow'
+		};
+
+		fetch("http://localhost:8080/member/add", requestOptions)
+		  .then(response => response.text())
+		  .then(function(response) {
+    		  
+    	    	hideMask();
+
+    		  })
+		  .catch(error => console.log('error', error));
+		  syncDelay(1000);
+
+		callback();
+		
+		}
+	
+	function deleteMember(currItem,callBack){
+		showMask();
+
+    	var id=currItem.id.replace('delete','');    	
+
+		
+		var yes = confirm('Are you sure to delete this member?');
+
+		if (yes) {
+			var myHeaders = new Headers();
+			myHeaders.append("Authorization", "Bearer "+document.getElementById('token').value);
+			myHeaders.append("Content-Type", "application/json");
+
+
+			var requestOptions = {
+			  method: 'GET',
+			  headers: myHeaders,
+			  redirect: 'follow'
+			};
+
+			fetch("http://localhost:8080/member/delete/"+id, requestOptions)
+			  .then(response => response.text())
+			  .then(function(response) {
+				  
+    	    	hideMask();
+
+    		  })
+			  .catch(error => console.log('error', error));
+			
+					}
+		  syncDelay(1000);
+
+		callBack();
+
+		
+	}
+
+	function hideMask(){
+		var maskLock=document.getElementById("maskLock");
+
+		maskLock.style.display='none';
+	}
+	function showMask(){
+		var maskLock=document.getElementById("maskLock");
+
+		maskLock.style.display='block';	
+		
+}
+	function queryBack(){
+		document.getElementById("authBtn").click();
+		}
+	
+	function syncDelay(milliseconds){
+		 var start = new Date().getTime();
+		 var end=0;
+		 while( (end-start) < milliseconds){
+		     end = new Date().getTime();
+		 }
+		}
+  </script>
+<style>
+
+.attribution {
+	font-size: 11px;
+	text-align: center;
+}
+
+.attribution a {
+	color: hsl(228, 45%, 44%);
+}
+
+.container {
+	background: dodgerblue;
+	padding: 20px;
+	height: 70px;
+}
+
+#hamburger {
+	width: 40px;
+	height: 40px;
+	display: block;
+	position: relative;
+	float: right;
+	transform: rotate(0deg);
+	transition: .5s ease-in-out;
+	cursor: pointer;
+}
+
+#hamburger span {
+	display: block;
+	position: absolute;
+	height: 4px;
+	width: 100%;
+	background: white;
+	border-radius: 9px;
+	opacity: 1;
+	left: 0;
+	transform: rotate(0deg);
+	transition: .25s ease-in-out;
+}
+
+#hamburger span:nth-child(1) {
+	top: 0px;
+}
+
+#hamburger span:nth-child(2) {
+	top: 12px;
+}
+
+#hamburger span:nth-child(3) {
+	top: 24px;
+}
+
+#hamburger.open span:nth-child(1) {
+	top: 14px;
+	transform: rotate(135deg);
+}
+
+#hamburger.open span:nth-child(2) {
+	opacity: 0;
+	left: -60px;
+}
+
+#hamburger.open span:nth-child(3) {
+	top: 14px;
+	transform: rotate(-135deg);
+}
+
+#test {
+	cursor: e-resize;
+	border: 1px solid red;
+	border-radius: 20px;
+	margin: 5px auto;
+	width: 25px;
+	transform: translateX(-400vh);
+	align-items: center;
+}
+
+th {
+	display: table-cell;
+	vertical-align: inherit;
+	font-weight: bold;
+	text-align: center;
+	background-color: blue;
+	color: white;
+}
+
+tr {
+	background-color: #0FB7DA;
+	color: #FDFFD3;
+}
+
+/* The popup form - hidden by default */
+.form-popup {
+	display: none;
+	position: fixed;
+	bottom: 200px;
+	border: 3px solid black;
+	z-index: 1000;
+	background-color: white;
+}
+.lmask {
+  position: absolute;
+  height: 100%;
+  width: 100%; 
+  background-color: #000;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 9999;;
+  opacity: 0.4;
+  &.fixed {
+    position: fixed;
+  }
+  &:before {
+    content: '';
+    background-color: rgba(0,0,0,0);
+    border: 5px solid rgba(0,183,229,0.9);
+    opacity: .9;
+    border-right: 5px solid rgba(0,0,0,0);
+    border-left: 5px solid rgba(0,0,0,0);
+    border-radius: 50px;
+    box-shadow: 0 0 35px #2187e7;
+    width: 50px;
+    height: 50px;
+    -moz-animation: spinPulse 1s infinite ease-in-out;
+    -webkit-animation: spinPulse 1s infinite linear;
+
+    margin: -25px 0 0 -25px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+  }
+  &:after {
+    content: '';
+    background-color: rgba(0,0,0,0);
+    border: 5px solid rgba(0,183,229,0.9);
+    opacity: .9;
+    border-left: 5px solid rgba(0,0,0,0);
+    border-right: 5px solid rgba(0,0,0,0);
+    border-radius: 50px;
+    box-shadow: 0 0 15px #2187e7;
+    width: 30px;
+    height: 30px;
+    -moz-animation: spinoffPulse 1s infinite linear;
+    -webkit-animation: spinoffPulse 1s infinite linear;
+
+    margin: -15px 0 0 -15px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+  }
+}
+
+
+
+
+
+</style>
+</head>
+
+<body>
+<div class='lmask' id='maskLock'></div>
+	<div class="container">
+		<div id="hamburger">
+			<span></span> <span></span> <span></span>
+		</div>
+
+
+	</div>
+	<div style="color: red;">
+		<br />
+		<input id="token" style="display:none"></input>
+	</div>
+	<button id="authBtn" onclick="getMemberData()">Query</button>
+	<button id="add" onclick="openForm()">Add New Member</button>
+	<div class="form-popup" id="myForm">
+		<form action="/action_page.php" class="form-container">
+			<h1>Add Member</h1>
+			<table>
+				<tr>
+					<td>
+						<div>
+							<label for="ID"><b>ID</b></label> <br /> <label for="password"><b>Password</b></label><br />
+							<label for="Email"><b>Email</b></label> <br /> <label
+								for="Birth"><b>Birth</b></label>
+						</div>
+					</td>
+					<td>
+						<div>
+							<input type="text" placeholder="Enter Name" id="addName" required><br />
+							<input type="text" placeholder="Enter Password" id="addPwd"
+								required> <br /> <input type="text"
+								placeholder="Enter Email" id="addEmail" required> <br />
+							<input type="date" placeholder="select birth" id="addBirth"
+								required> <br />
+						</div>
+					</td>
+				</tr>
+			</table>
+			<button type="button" class="btn" onclick="save(queryBack);closeForm()">save</button>
+			<button type="button" class="btn cancel" onclick="closeForm()">Close</button>
+		</form>
+	</div>
+	</div>
+	<table class="table table-striped">
+		<tr class="bg-info">
+			<th></th>
+			<th>Name</th>
+			<th>PWD</th>
+			<th>Email</th>
+			<th>Birthday</th>
+			<th>ACTION</th>
+		</tr>
+
+		<tbody id="myTable">
+
+		</tbody>
+	</table>
+</body>
+
+</html>
